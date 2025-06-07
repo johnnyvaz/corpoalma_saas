@@ -1,7 +1,8 @@
+
 'use client';
 
 import Link from 'next/link';
-import { use, useState, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { CircleIcon, Home, LogOut } from 'lucide-react';
 import {
@@ -11,22 +12,37 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { signOut } from '@/app/(login)/actions';
+import { signOutAction } from '@/app/(login)/actions';
 import { useRouter } from 'next/navigation';
 import { User } from '@/lib/db/schema';
 import useSWR from 'swr';
+import { createSupabaseClient } from '@/lib/supabase/client';
+import { useEffect } from 'react';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function UserMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { data: user } = useSWR<User>('/api/user', fetcher);
+  const { data: user, mutate } = useSWR<User>('/api/user', fetcher);
   const router = useRouter();
+  const supabase = createSupabaseClient();
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        router.push('/');
+      } else if (event === 'SIGNED_IN') {
+        mutate();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router, mutate, supabase.auth]);
 
   async function handleSignOut() {
-    await signOut(user?.email as string);
-    router.refresh();
-    router.push('/');
+    await signOutAction();
   }
 
   if (!user) {
@@ -36,10 +52,10 @@ function UserMenu() {
           href="/pricing"
           className="text-sm font-medium text-gray-700 hover:text-gray-900"
         >
-          Pricing
+          Preços
         </Link>
         <Button asChild className="rounded-full">
-          <Link href="/sign-up">Sign Up</Link>
+          <Link href="/sign-up">Cadastrar</Link>
         </Button>
       </>
     );
@@ -47,60 +63,71 @@ function UserMenu() {
 
   return (
     <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-      <DropdownMenuTrigger>
-        <Avatar className="cursor-pointer size-9">
-          <AvatarImage alt={user.name || ''} />
-          <AvatarFallback>
-            {user.email
-              .split(' ')
-              .map((n) => n[0])
-              .join('')}
-          </AvatarFallback>
-        </Avatar>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="relative h-9 w-9 rounded-full"
+        >
+          <Avatar className="h-9 w-9">
+            <AvatarImage src="" alt={user.name} />
+            <AvatarFallback>
+              {user.name
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="flex flex-col gap-1">
-        <DropdownMenuItem className="cursor-pointer">
-          <Link href="/dashboard" className="flex w-full items-center">
+      <DropdownMenuContent className="w-56" align="end">
+        <div className="flex items-center justify-start gap-2 p-2">
+          <div className="flex flex-col space-y-1 leading-none">
+            <p className="font-medium">{user.name}</p>
+            <p className="w-[200px] truncate text-sm text-muted-foreground">
+              {user.email}
+            </p>
+          </div>
+        </div>
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard" className="flex items-center">
             <Home className="mr-2 h-4 w-4" />
-            <span>Dashboard</span>
+            Dashboard
           </Link>
         </DropdownMenuItem>
-        <form action={handleSignOut} className="w-full">
-          <button type="submit" className="flex w-full">
-            <DropdownMenuItem className="w-full flex-1 cursor-pointer">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Sign out</span>
-            </DropdownMenuItem>
-          </button>
-        </form>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onSelect={handleSignOut}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Sair
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
 
-function Header() {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <header className="border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center">
-          <CircleIcon className="h-6 w-6 text-orange-500" />
-          <span className="ml-2 text-xl font-semibold text-gray-900">ACME</span>
-        </Link>
-        <div className="flex items-center space-x-4">
-          <Suspense fallback={<div className="h-9" />}>
+    <div className="min-h-screen bg-gray-50/50">
+      <header className="border-b bg-white">
+        <div className="flex h-16 items-center justify-between px-4">
+          <Link href="/dashboard" className="flex items-center space-x-2">
+            <CircleIcon className="h-6 w-6 text-orange-500" />
+            <span className="font-bold">Alimentando Corpo e Alma</span>
+          </Link>
+          <Suspense fallback={<div className="h-9 w-9 rounded-full bg-gray-200 animate-pulse" />}>
             <UserMenu />
           </Suspense>
         </div>
-      </div>
-    </header>
-  );
-}
-
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <section className="flex flex-col min-h-screen">
-      <Header />
-      {children}
-    </section>
+      </header>
+      <main className="container mx-auto px-4 py-8">
+        {children}
+      </main>
+    </div>
   );
 }

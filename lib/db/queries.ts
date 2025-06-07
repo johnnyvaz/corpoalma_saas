@@ -1,188 +1,290 @@
-
-import { desc, eq, and, gte, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { db } from './drizzle';
 import {
-  users,
+  activityLogs,
   teams,
   teamMembers,
-  activityLogs,
+  users,
   weeklyThemes,
   dailyTasks,
   userProgress,
   weightTracking,
   testimonials,
+  type NewActivityLog,
+  type NewTeamMember,
   type User,
+  type NewUser,
   type Team,
-  type TeamMember,
-  type ActivityLog,
+  type NewTeam,
   type WeeklyTheme,
   type DailyTask,
   type UserProgress,
+  type NewUserProgress,
   type WeightTracking,
+  type NewWeightTracking,
   type Testimonial,
+  type NewTestimonial,
 } from './schema';
 
-// Existing user queries
-export async function getUser(email: string): Promise<User | null> {
-  const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
-  return user.length > 0 ? user[0] : null;
-}
-
-export async function createUser(email: string, passwordHash: string, name: string): Promise<User> {
-  const [user] = await db.insert(users).values({
-    email,
-    passwordHash,
-    name,
-    programStartDate: new Date(),
-  }).returning();
+export async function createUser(data: NewUser): Promise<User> {
+  const [user] = await db.insert(users).values(data).returning();
   return user;
 }
 
-export async function getUserById(id: number): Promise<User | null> {
-  const user = await db.select().from(users).where(eq(users.id, id)).limit(1);
-  return user.length > 0 ? user[0] : null;
+export async function getUserById(id: string): Promise<User | null> {
+  const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return user || null;
 }
 
-// Program-specific queries
-
-// Weekly themes
-export async function getWeeklyTheme(weekNumber: number): Promise<WeeklyTheme | null> {
-  const theme = await db.select().from(weeklyThemes).where(eq(weeklyThemes.weekNumber, weekNumber)).limit(1);
-  return theme.length > 0 ? theme[0] : null;
+export async function getUserByEmail(email: string): Promise<User | null> {
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return user || null;
 }
 
-export async function getAllWeeklyThemes(): Promise<WeeklyTheme[]> {
-  return await db.select().from(weeklyThemes).orderBy(weeklyThemes.weekNumber);
+export async function createTeam(data: NewTeam): Promise<Team> {
+  const [team] = await db.insert(teams).values(data).returning();
+  return team;
 }
 
-// Daily tasks
-export async function getDailyTask(weekNumber: number, dayNumber: number): Promise<DailyTask | null> {
-  const task = await db.select().from(dailyTasks)
-    .where(and(eq(dailyTasks.weekNumber, weekNumber), eq(dailyTasks.dayNumber, dayNumber)))
+export async function createTeamMember(data: NewTeamMember) {
+  await db.insert(teamMembers).values(data);
+}
+
+export async function getTeamByStripeCustomerId(customerId: string): Promise<Team | null> {
+  const [team] = await db
+    .select()
+    .from(teams)
+    .where(eq(teams.stripeCustomerId, customerId))
     .limit(1);
-  return task.length > 0 ? task[0] : null;
+  return team || null;
 }
 
-export async function getWeeklyTasks(weekNumber: number): Promise<DailyTask[]> {
-  return await db.select().from(dailyTasks)
-    .where(eq(dailyTasks.weekNumber, weekNumber))
-    .orderBy(dailyTasks.dayNumber);
+export async function updateTeamSubscription(
+  teamId: number,
+  subscription: {
+    stripeSubscriptionId: string | null;
+    stripeProductId: string | null;
+    planName: string | null;
+    subscriptionStatus: string;
+  }
+) {
+  await db
+    .update(teams)
+    .set({
+      ...subscription,
+      updatedAt: new Date(),
+    })
+    .where(eq(teams.id, teamId));
 }
 
-export async function createDailyTask(task: Omit<DailyTask, 'id' | 'createdAt'>): Promise<DailyTask> {
-  const [newTask] = await db.insert(dailyTasks).values(task).returning();
-  return newTask;
+export async function getUserWithTeam(userId: string) {
+  const result = await db
+    .select({
+      user: users,
+      teamMember: teamMembers,
+      team: teams,
+    })
+    .from(users)
+    .leftJoin(teamMembers, eq(users.id, teamMembers.userId))
+    .leftJoin(teams, eq(teamMembers.teamId, teams.id))
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  return result[0] || null;
 }
 
-// User progress
-export async function getUserProgress(userId: number, weekNumber: number): Promise<UserProgress[]> {
-  return await db.select().from(userProgress)
-    .where(and(eq(userProgress.userId, userId), eq(userProgress.weekNumber, weekNumber)))
-    .orderBy(userProgress.dayNumber);
+export async function getActivityLogs(): Promise<
+  Array<{
+    id: number;
+    action: string;
+    timestamp: Date;
+    user: { id: string; name: string } | null;
+  }>
+> {
+  const logs = await db
+    .select({
+      id: activityLogs.id,
+      action: activityLogs.action,
+      timestamp: activityLogs.timestamp,
+      user: {
+        id: users.id,
+        name: users.name,
+      },
+    })
+    .from(activityLogs)
+    .leftJoin(users, eq(activityLogs.userId, users.id))
+    .orderBy(desc(activityLogs.timestamp))
+    .limit(10);
+
+  return logs;
 }
 
-export async function markTaskCompleted(userId: number, weekNumber: number, dayNumber: number, notes?: string): Promise<UserProgress> {
-  const existing = await db.select().from(userProgress)
-    .where(and(
-      eq(userProgress.userId, userId),
-      eq(userProgress.weekNumber, weekNumber),
-      eq(userProgress.dayNumber, dayNumber)
-    )).limit(1);
+export async function logActivity(
+  teamId: number | undefined,
+  userId: string | undefined,
+  action: string
+) {
+  if (teamId) {
+    const logData: NewActivityLog = {
+      teamId,
+      userId: userId || null,
+      action,
+      timestamp: new Date(),
+    };
 
-  if (existing.length > 0) {
-    const [updated] = await db.update(userProgress)
-      .set({
-        completed: true,
-        notes,
-        completedAt: new Date(),
-      })
-      .where(eq(userProgress.id, existing[0].id))
-      .returning();
-    return updated;
-  } else {
-    const [newProgress] = await db.insert(userProgress).values({
-      userId,
-      weekNumber,
-      dayNumber,
-      completed: true,
-      notes,
-      completedAt: new Date(),
-    }).returning();
-    return newProgress;
+    await db.insert(activityLogs).values(logData);
   }
 }
 
-// Weight tracking
-export async function getUserWeightHistory(userId: number): Promise<WeightTracking[]> {
-  return await db.select().from(weightTracking)
+// Program specific queries
+export async function getWeeklyTheme(weekNumber: number): Promise<WeeklyTheme | null> {
+  const [theme] = await db
+    .select()
+    .from(weeklyThemes)
+    .where(eq(weeklyThemes.weekNumber, weekNumber))
+    .limit(1);
+  return theme || null;
+}
+
+export async function getDailyTask(weekNumber: number, dayNumber: number): Promise<DailyTask | null> {
+  const [task] = await db
+    .select()
+    .from(dailyTasks)
+    .where(
+      and(
+        eq(dailyTasks.weekNumber, weekNumber),
+        eq(dailyTasks.dayNumber, dayNumber)
+      )
+    )
+    .limit(1);
+  return task || null;
+}
+
+export async function getUserProgress(userId: string, weekNumber: number, dayNumber: number): Promise<UserProgress | null> {
+  const [progress] = await db
+    .select()
+    .from(userProgress)
+    .where(
+      and(
+        eq(userProgress.userId, userId),
+        eq(userProgress.weekNumber, weekNumber),
+        eq(userProgress.dayNumber, dayNumber)
+      )
+    )
+    .limit(1);
+  return progress || null;
+}
+
+export async function createUserProgress(data: NewUserProgress): Promise<UserProgress> {
+  const [progress] = await db.insert(userProgress).values(data).returning();
+  return progress;
+}
+
+export async function updateUserProgress(
+  userId: string,
+  weekNumber: number,
+  dayNumber: number,
+  data: Partial<NewUserProgress>
+) {
+  await db
+    .update(userProgress)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(userProgress.userId, userId),
+        eq(userProgress.weekNumber, weekNumber),
+        eq(userProgress.dayNumber, dayNumber)
+      )
+    );
+}
+
+export async function getLatestWeight(userId: string): Promise<WeightTracking | null> {
+  const [weight] = await db
+    .select()
+    .from(weightTracking)
+    .where(eq(weightTracking.userId, userId))
+    .orderBy(desc(weightTracking.recordedAt))
+    .limit(1);
+  return weight || null;
+}
+
+export async function createWeightTracking(data: NewWeightTracking): Promise<WeightTracking> {
+  const [weight] = await db.insert(weightTracking).values(data).returning();
+  return weight;
+}
+
+export async function getWeightHistory(userId: string): Promise<WeightTracking[]> {
+  return db
+    .select()
+    .from(weightTracking)
     .where(eq(weightTracking.userId, userId))
     .orderBy(desc(weightTracking.recordedAt));
 }
 
-export async function addWeightRecord(userId: number, weight: number, weekNumber: number): Promise<WeightTracking> {
-  const [record] = await db.insert(weightTracking).values({
-    userId,
-    weight: weight.toString(),
-    weekNumber,
-  }).returning();
-  return record;
-}
-
-export async function getLatestWeight(userId: number): Promise<WeightTracking | null> {
-  const weight = await db.select().from(weightTracking)
-    .where(eq(weightTracking.userId, userId))
-    .orderBy(desc(weightTracking.recordedAt))
-    .limit(1);
-  return weight.length > 0 ? weight[0] : null;
-}
-
-// Testimonials
-export async function createTestimonial(userId: number, weekNumber: number, content: string, isPublic: boolean = false): Promise<Testimonial> {
-  const [testimonial] = await db.insert(testimonials).values({
-    userId,
-    weekNumber,
-    content,
-    isPublic,
-  }).returning();
+export async function createTestimonial(data: NewTestimonial): Promise<Testimonial> {
+  const [testimonial] = await db.insert(testimonials).values(data).returning();
   return testimonial;
 }
 
-export async function getUserTestimonials(userId: number): Promise<Testimonial[]> {
-  return await db.select().from(testimonials)
+export async function getUserTestimonials(userId: string): Promise<Testimonial[]> {
+  return db
+    .select()
+    .from(testimonials)
     .where(eq(testimonials.userId, userId))
     .orderBy(desc(testimonials.createdAt));
 }
 
 export async function getPublicTestimonials(): Promise<Testimonial[]> {
-  return await db.select().from(testimonials)
+  return db
+    .select()
+    .from(testimonials)
     .where(eq(testimonials.isPublic, true))
     .orderBy(desc(testimonials.createdAt))
     .limit(10);
 }
 
-// User program management
-export async function updateUserWeek(userId: number, weekNumber: number): Promise<User> {
-  const [user] = await db.update(users)
-    .set({ currentWeek: weekNumber })
-    .where(eq(users.id, userId))
-    .returning();
-  return user;
+export async function getWeeklyProgress(userId: string, weekNumber: number): Promise<UserProgress[]> {
+  return db
+    .select()
+    .from(userProgress)
+    .where(
+      and(
+        eq(userProgress.userId, userId),
+        eq(userProgress.weekNumber, weekNumber)
+      )
+    )
+    .orderBy(userProgress.dayNumber);
 }
 
-export async function completeProgram(userId: number): Promise<User> {
-  const [user] = await db.update(users)
-    .set({ programCompleted: true })
-    .where(eq(users.id, userId))
-    .returning();
-  return user;
+export async function updateUserWeek(userId: string, weekNumber: number) {
+  await db
+    .update(users)
+    .set({
+      currentWeek: weekNumber,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId));
+}
+
+export async function markProgramCompleted(userId: string) {
+  await db
+    .update(users)
+    .set({
+      programCompleted: true,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId));
 }
 
 // Analytics
-export async function getUserCompletionRate(userId: number): Promise<number> {
-  const totalTasks = await db.select({ count: sql<number>`count(*)` })
-    .from(dailyTasks);
-  
-  const completedTasks = await db.select({ count: sql<number>`count(*)` })
+export async function getUserCompletionRate(userId: string): Promise<number> {
+  const totalTasks = await db.select({ count: sql<number>`count(*)` }).from(dailyTasks);
+
+  const completedTasks = await db
+    .select({ count: sql<number>`count(*)` })
     .from(userProgress)
     .where(and(eq(userProgress.userId, userId), eq(userProgress.completed, true)));
 
@@ -205,112 +307,8 @@ export async function getAverageWeightLoss(): Promise<number> {
     ) last_weight ON first_weight.user_id = last_weight.user_id
     WHERE first_weight.weight > last_weight.weight
   `);
-  
+
   const firstRow = result[0] as { avg_loss: number | null } | undefined;
 
   return firstRow?.avg_loss ?? 0;
-}
-
-// Team/admin queries (keeping existing structure)
-export async function getTeamByStripeCustomerId(customerId: string): Promise<Team | null> {
-  const team = await db.select().from(teams).where(eq(teams.stripeCustomerId, customerId)).limit(1);
-  return team.length > 0 ? team[0] : null;
-}
-
-export async function createTeam(data: { name: string; userId: number }): Promise<Team> {
-  const [team] = await db.insert(teams).values({ name: data.name }).returning();
-  
-  await db.insert(teamMembers).values({
-    teamId: team.id,
-    userId: data.userId,
-    role: 'owner',
-  });
-
-  return team;
-}
-
-export async function getTeamByUserId(userId: number): Promise<Team | null> {
-  const teamMember = await db
-    .select({ team: teams })
-    .from(teamMembers)
-    .innerJoin(teams, eq(teamMembers.teamId, teams.id))
-    .where(eq(teamMembers.userId, userId))
-    .limit(1);
-
-  return teamMember.length > 0 ? teamMember[0].team : null;
-}
-
-export async function updateTeamSubscription(
-  teamId: number,
-  subscriptionData: {
-    stripeCustomerId?: string;
-    stripeSubscriptionId?: string;
-    stripeProductId?: string;
-    planName?: string;
-    subscriptionStatus?: string;
-  }
-): Promise<Team> {
-  const [team] = await db.update(teams).set(subscriptionData).where(eq(teams.id, teamId)).returning();
-  return team;
-}
-
-export async function getActivityLogs(): Promise<
-  Array<ActivityLog & { user: { name: string; email: string } | null; team: { name: string } }>
-> {
-  return await db
-    .select({
-      id: activityLogs.id,
-      teamId: activityLogs.teamId,
-      userId: activityLogs.userId,
-      action: activityLogs.action,
-      timestamp: activityLogs.timestamp,
-      ipAddress: activityLogs.ipAddress,
-      user: {
-        name: users.name,
-        email: users.email,
-      },
-      team: {
-        name: teams.name,
-      },
-    })
-    .from(activityLogs)
-    .leftJoin(users, eq(activityLogs.userId, users.id))
-    .innerJoin(teams, eq(activityLogs.teamId, teams.id))
-    .orderBy(desc(activityLogs.timestamp))
-    .limit(10);
-}
-
-export async function logActivity(teamId: number, userId: number | null, action: string, ipAddress?: string): Promise<ActivityLog> {
-  const [log] = await db.insert(activityLogs).values({
-    teamId,
-    userId,
-    action,
-    ipAddress,
-  }).returning();
-  return log;
-}
-
-export async function getTeamForUser(userId: number): Promise<{ team: Team; role: string } | null> {
-  const result = await db
-    .select({
-      team: teams,
-      role: teamMembers.role,
-    })
-    .from(teamMembers)
-    .innerJoin(teams, eq(teamMembers.teamId, teams.id))
-    .where(eq(teamMembers.userId, userId))
-    .limit(1);
-
-  return result.length > 0 ? result[0] : null;
-}
-
-export async function getUserWithTeam(userId: number): Promise<(User & { team: Team | null }) | null> {
-  const user = await getUserById(userId);
-  if (!user) return null;
-
-  const teamData = await getTeamForUser(userId);
-  return {
-    ...user,
-    team: teamData?.team || null,
-  };
 }

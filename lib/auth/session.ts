@@ -1,87 +1,105 @@
-import { compare, hash } from 'bcryptjs';
-import { SignJWT, jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
-import { NewUser, User } from '@/lib/db/schema';
+
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createSupabaseClient } from '@/lib/supabase/client';
+import { User } from '@/lib/db/schema';
 import { getUserById } from '@/lib/db/queries';
 
-const key = new TextEncoder().encode(process.env.AUTH_SECRET);
-const SALT_ROUNDS = 10;
-
-export async function hashPassword(password: string) {
-  return hash(password, SALT_ROUNDS);
-}
-
-export async function comparePasswords(
-  plainTextPassword: string,
-  hashedPassword: string
-) {
-  return compare(plainTextPassword, hashedPassword);
-}
-
-type SessionData = {
-  user: { id: number };
-  expires: string;
-};
-
-export async function signToken(payload: SessionData) {
-  return await new SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('1 day from now')
-    .sign(key);
-}
-
-export async function verifyToken(input: string) {
-  const { payload } = await jwtVerify(input, key, {
-    algorithms: ['HS256'],
-  });
-  return payload as SessionData;
-}
-
-export async function getSession() {
-  const session = (await cookies()).get('session')?.value;
-  if (!session) return null;
-  return await verifyToken(session);
-}
-
-export async function setSession(user: NewUser) {
-  const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const session: SessionData = {
-    user: { id: user.id! },
-    expires: expiresInOneDay.toISOString(),
-  };
-  const encryptedSession = await signToken(session);
-  (await cookies()).set('session', encryptedSession, {
-    expires: expiresInOneDay,
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-  });
-}
-
 export async function getUser(): Promise<User | null> {
-  const sessionCookie = (await cookies()).get('session');
-  if (!sessionCookie || !sessionCookie.value) {
+  const supabase = createServerSupabaseClient();
+  
+  try {
+    const { data: { user: authUser }, error } = await supabase.auth.getUser();
+    
+    if (error || !authUser) {
+      return null;
+    }
+
+    // Get user from our database
+    const user = await getUserById(authUser.id);
+    return user;
+  } catch (error) {
+    console.error('Error getting user:', error);
     return null;
   }
-
-  const sessionData = await verifyToken(sessionCookie.value);
-  if (
-    !sessionData ||
-    !sessionData.user ||
-    typeof sessionData.user.id !== 'number'
-  ) {
-    return null;
-  }
-
-  if (new Date(sessionData.expires) < new Date()) {
-    return null;
-  }
-
-  const user = await getUserById(sessionData.user.id);
-  return user;
 }
 
 export async function getCurrentUser(): Promise<User | null> {
   return await getUser();
+}
+
+export async function getSession() {
+  const supabase = createServerSupabaseClient();
+  
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error || !session) {
+      return null;
+    }
+
+    return session;
+  } catch (error) {
+    console.error('Error getting session:', error);
+    return null;
+  }
+}
+
+export async function signOut() {
+  const supabase = createSupabaseClient();
+  
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error signing out:', error);
+    }
+    return { error: null };
+  } catch (error) {
+    console.error('Error signing out:', error);
+    return { error: 'Failed to sign out' };
+  }
+}
+
+export async function signInWithEmail(email: string, password: string) {
+  const supabase = createSupabaseClient();
+  
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      return { error: error.message, data: null };
+    }
+
+    return { error: null, data };
+  } catch (error) {
+    console.error('Error signing in:', error);
+    return { error: 'Failed to sign in', data: null };
+  }
+}
+
+export async function signUpWithEmail(email: string, password: string, name: string) {
+  const supabase = createSupabaseClient();
+  
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name: name,
+        },
+      },
+    });
+
+    if (error) {
+      return { error: error.message, data: null };
+    }
+
+    return { error: null, data };
+  } catch (error) {
+    console.error('Error signing up:', error);
+    return { error: 'Failed to sign up', data: null };
+  }
 }

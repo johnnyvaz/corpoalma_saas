@@ -1,9 +1,9 @@
-import { pgTable, serial, text, timestamp, varchar, integer, boolean, decimal } from 'drizzle-orm/pg-core';
+
+import { pgTable, serial, text, timestamp, varchar, integer, boolean, decimal, uuid } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').primaryKey(),
   email: varchar('email', { length: 255 }).notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
   name: varchar('name', { length: 255 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -31,14 +31,14 @@ export const invitations = pgTable('invitations', {
   teamId: integer('team_id').notNull().references(() => teams.id),
   email: varchar('email', { length: 255 }).notNull(),
   role: varchar('role', { length: 50 }).notNull().default('member'),
-  invitedBy: integer('invited_by').notNull().references(() => users.id),
+  invitedBy: uuid('invited_by').notNull().references(() => users.id),
   status: varchar('status', { length: 20 }).notNull().default('pending'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export const teamMembers = pgTable('team_members', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id),
+  userId: uuid('user_id').notNull().references(() => users.id),
   teamId: integer('team_id').notNull().references(() => teams.id),
   role: varchar('role', { length: 50 }).notNull().default('member'),
   joinedAt: timestamp('joined_at').defaultNow().notNull(),
@@ -47,7 +47,7 @@ export const teamMembers = pgTable('team_members', {
 export const activityLogs = pgTable('activity_logs', {
   id: serial('id').primaryKey(),
   teamId: integer('team_id').notNull().references(() => teams.id),
-  userId: integer('user_id').references(() => users.id),
+  userId: uuid('user_id').references(() => users.id),
   action: text('action').notNull(),
   timestamp: timestamp('timestamp').defaultNow().notNull(),
   ipAddress: varchar('ip_address', { length: 45 }),
@@ -75,7 +75,7 @@ export const dailyTasks = pgTable('daily_tasks', {
 
 export const userProgress = pgTable('user_progress', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id),
+  userId: uuid('user_id').notNull().references(() => users.id),
   weekNumber: integer('week_number').notNull(),
   dayNumber: integer('day_number').notNull(),
   completed: boolean('completed').default(false).notNull(),
@@ -86,7 +86,7 @@ export const userProgress = pgTable('user_progress', {
 
 export const weightTracking = pgTable('weight_tracking', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id),
+  userId: uuid('user_id').notNull().references(() => users.id),
   weight: decimal('weight', { precision: 5, scale: 2 }).notNull(),
   weekNumber: integer('week_number').notNull(),
   recordedAt: timestamp('recorded_at').defaultNow().notNull(),
@@ -94,7 +94,7 @@ export const weightTracking = pgTable('weight_tracking', {
 
 export const testimonials = pgTable('testimonials', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id),
+  userId: uuid('user_id').notNull().references(() => users.id),
   weekNumber: integer('week_number').notNull(),
   content: text('content').notNull(),
   isPublic: boolean('is_public').default(false).notNull(),
