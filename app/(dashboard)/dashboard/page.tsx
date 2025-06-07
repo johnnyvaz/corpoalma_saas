@@ -11,7 +11,10 @@ import {
 } from '@/components/ui/card';
 import { customerPortalAction } from '@/lib/payments/actions';
 import { useActionState } from 'react';
-import { TeamDataWithMembers, User } from '@/lib/db/schema';
+// TODO: Definir tipo correto para TeamDataWithMembers
+// import { TeamDataWithMembers } from '@/lib/db/schema';
+import { User } from '@/lib/db/schema';
+type TeamDataWithMembers = any;
 import { removeTeamMember, inviteTeamMember } from '@/app/(login)/actions';
 import useSWR from 'swr';
 import { Suspense } from 'react';
@@ -60,11 +63,12 @@ function ManageSubscription() {
                   : 'No active subscription'}
               </p>
             </div>
-            <form action={customerPortalAction}>
-              <Button type="submit" variant="outline">
+            {/* TODO: Voltar para <form action={customerPortalAction}> quando corrigir tipos do server action */}
+            <a href="/api/stripe-portal" target="_blank" rel="noopener noreferrer">
+              <Button type="button" variant="outline">
                 Manage Subscription
               </Button>
-            </form>
+            </a>
           </div>
         </div>
       </CardContent>
@@ -124,7 +128,7 @@ function TeamMembers() {
       </CardHeader>
       <CardContent>
         <ul className="space-y-4">
-          {teamData.teamMembers.map((member, index) => (
+          {teamData.teamMembers.map((member: any, index: number) => (
             <li key={member.id} className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Avatar>
@@ -188,7 +192,8 @@ function InviteTeamMemberSkeleton() {
 }
 
 function InviteTeamMember() {
-  const { data: user } = useSWR<User>('/api/user', fetcher);
+  // TODO: Definir tipo correto para 'user' que inclua 'role'
+const { data: user } = useSWR<any>('/api/user', fetcher);
   const isOwner = user?.role === 'owner';
   const [inviteState, inviteAction, isInvitePending] = useActionState<
     ActionState,

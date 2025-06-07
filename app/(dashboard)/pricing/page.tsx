@@ -74,9 +74,10 @@ export default function PricingPage() {
               </p>
             </div>
 
-            <form action={createCheckoutSession}>
-              <SubmitButton />
-            </form>
+            {/* TODO: Voltar para <form action={createCheckoutSession}> quando corrigir tipos do server action */}
+<a href="/api/stripe-checkout" target="_blank" rel="noopener noreferrer">
+  <Button type="button" variant="default">Comprar agora</Button>
+</a>
 
             <div className="text-xs text-muted-foreground space-y-1">
               <p>💳 Pagamento seguro via Stripe</p>
@@ -180,9 +181,10 @@ export default function PricingPage() {
           Inicie hoje mesmo sua jornada de 5 semanas rumo a uma vida mais saudável e equilibrada, 
           fundamentada nos princípios bíblicos.
         </p>
-        <form action={createCheckoutSession}>
-          <SubmitButton />
-        </form>
+        {/* TODO: Voltar para <form action={createCheckoutSession}> quando corrigir tipos do server action */}
+<a href="/api/stripe-checkout" target="_blank" rel="noopener noreferrer">
+  <Button type="button" variant="default">Comprar agora</Button>
+</a>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { markTaskCompleted } from '@/lib/db/queries';
+import { completeTask } from '../actions/task';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2 } from 'lucide-react';
 
@@ -24,7 +24,7 @@ export function TaskCompletion({ userId, weekNumber, dayNumber, isCompleted }: T
   const handleComplete = async () => {
     setIsLoading(true);
     try {
-      await markTaskCompleted(userId, weekNumber, dayNumber, notes);
+      await completeTask(userId, weekNumber, dayNumber, notes);
       setNotes('');
       router.refresh();
     } catch (error) {

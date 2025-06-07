@@ -24,7 +24,7 @@ function UserMenu() {
   const router = useRouter();
 
   async function handleSignOut() {
-    await signOut();
+    await signOut(user?.email as string);
     router.refresh();
     router.push('/');
   }

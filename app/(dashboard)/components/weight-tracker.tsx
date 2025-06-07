@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { addWeightRecord } from '@/lib/db/queries';
+import { addWeight } from '../actions/weight';
 import { useRouter } from 'next/navigation';
 
 interface WeightTrackerProps {
@@ -24,7 +24,7 @@ export function WeightTracker({ userId, currentWeek }: WeightTrackerProps) {
 
     setIsLoading(true);
     try {
-      await addWeightRecord(userId, parseFloat(weight), currentWeek);
+      await addWeight(userId, parseFloat(weight), currentWeek);
       setWeight('');
       router.refresh();
     } catch (error) {

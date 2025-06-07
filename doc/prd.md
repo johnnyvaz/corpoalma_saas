@@ -206,10 +206,3 @@ Cristãos adultos, homens e mulheres, interessados em melhorar sua saúde e qual
 * Engajamento no grupo
 * Nº de testemunhos registrados
 
-## Tecnologias Sugeridas
-
-* Frontend: Next.js ou React
-* Backend: Node.js com banco de dados PostgreSQL ou Firebase
-* Pagamento: Stripe, Mercado Pago ou Hotmart
-* Plataforma de envio de áudio: WhatsApp Business API ou Twilio
-* Infraestrutura: Vercel ou Heroku
