@@ -287,3 +287,28 @@ export async function logActivity(teamId: number, userId: number | null, action:
   }).returning();
   return log;
 }
+
+export async function getTeamForUser(userId: number): Promise<{ team: Team; role: string } | null> {
+  const result = await db
+    .select({
+      team: teams,
+      role: teamMembers.role,
+    })
+    .from(teamMembers)
+    .innerJoin(teams, eq(teamMembers.teamId, teams.id))
+    .where(eq(teamMembers.userId, userId))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getUserWithTeam(userId: number): Promise<(User & { team: Team | null }) | null> {
+  const user = await getUserById(userId);
+  if (!user) return null;
+
+  const teamData = await getTeamForUser(userId);
+  return {
+    ...user,
+    team: teamData?.team || null,
+  };
+}

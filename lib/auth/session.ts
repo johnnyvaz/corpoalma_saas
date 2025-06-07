@@ -57,3 +57,30 @@ export async function setSession(user: NewUser) {
     sameSite: 'lax',
   });
 }
+
+export async function getUser(): Promise<User | null> {
+  const sessionCookie = cookies().get('session');
+  if (!sessionCookie || !sessionCookie.value) {
+    return null;
+  }
+
+  const sessionData = await decrypt(sessionCookie.value);
+  if (
+    !sessionData ||
+    !sessionData.user ||
+    typeof sessionData.user.id !== 'number'
+  ) {
+    return null;
+  }
+
+  if (new Date(sessionData.expires) < new Date()) {
+    return null;
+  }
+
+  const user = await getUserById(sessionData.user.id);
+  return user;
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  return await getUser();
+}

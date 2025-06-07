@@ -11,20 +11,32 @@ import {
   CheckCircle,
   type LucideIcon,
 } from 'lucide-react';
-import { ActivityType } from '@/lib/db/schema';
 import { getActivityLogs } from '@/lib/db/queries';
 
+// Define the ActivityType as a string literal type
+type ActivityType =
+  | "sign_up"
+  | "sign_in"
+  | "sign_out"
+  | "update_password"
+  | "delete_account"
+  | "update_account"
+  | "create_team"
+  | "remove_team_member"
+  | "invite_team_member"
+  | "accept_invitation";
+
 const iconMap: Record<ActivityType, LucideIcon> = {
-  [ActivityType.SIGN_UP]: UserPlus,
-  [ActivityType.SIGN_IN]: UserCog,
-  [ActivityType.SIGN_OUT]: LogOut,
-  [ActivityType.UPDATE_PASSWORD]: Lock,
-  [ActivityType.DELETE_ACCOUNT]: UserMinus,
-  [ActivityType.UPDATE_ACCOUNT]: Settings,
-  [ActivityType.CREATE_TEAM]: UserPlus,
-  [ActivityType.REMOVE_TEAM_MEMBER]: UserMinus,
-  [ActivityType.INVITE_TEAM_MEMBER]: Mail,
-  [ActivityType.ACCEPT_INVITATION]: CheckCircle,
+  "sign_up": UserPlus,
+  "sign_in": UserCog,
+  "sign_out": LogOut,
+  "update_password": Lock,
+  "delete_account": UserMinus,
+  "update_account": Settings,
+  "create_team": UserPlus,
+  "remove_team_member": UserMinus,
+  "invite_team_member": Mail,
+  "accept_invitation": CheckCircle,
 };
 
 function getRelativeTime(date: Date) {
@@ -43,25 +55,25 @@ function getRelativeTime(date: Date) {
 
 function formatAction(action: ActivityType): string {
   switch (action) {
-    case ActivityType.SIGN_UP:
+    case "sign_up":
       return 'You signed up';
-    case ActivityType.SIGN_IN:
+    case "sign_in":
       return 'You signed in';
-    case ActivityType.SIGN_OUT:
+    case "sign_out":
       return 'You signed out';
-    case ActivityType.UPDATE_PASSWORD:
+    case "update_password":
       return 'You changed your password';
-    case ActivityType.DELETE_ACCOUNT:
+    case "delete_account":
       return 'You deleted your account';
-    case ActivityType.UPDATE_ACCOUNT:
+    case "update_account":
       return 'You updated your account';
-    case ActivityType.CREATE_TEAM:
+    case "create_team":
       return 'You created a new team';
-    case ActivityType.REMOVE_TEAM_MEMBER:
+    case "remove_team_member":
       return 'You removed a team member';
-    case ActivityType.INVITE_TEAM_MEMBER:
+    case "invite_team_member":
       return 'You invited a team member';
-    case ActivityType.ACCEPT_INVITATION:
+    case "accept_invitation":
       return 'You accepted an invitation';
     default:
       return 'Unknown action occurred';

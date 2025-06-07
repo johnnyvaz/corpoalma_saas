@@ -83,3 +83,6 @@ export const manageBilling = validatedAction(
     redirect(portalSession.url);
   }
 );
+
+// Alias for backward compatibility
+export const customerPortalAction = manageBilling;
