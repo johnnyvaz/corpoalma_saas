@@ -1,0 +1,329 @@
+~/workspace$ pnpm run build
+
+> @ build /home/runner/workspace
+> next build
+
+   ▲ Next.js 15.4.0-canary.47
+   - Environments: .env
+   - Experiments (use with caution):
+     ✓ ppr
+     ✓ nodeMiddleware
+     ✓ clientSegmentCache
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings in 23.0s
+
+./app/(dashboard)/dashboard/page.tsx
+Attempted import error: 'customerPortalAction' is not exported from '@/lib/payments/actions' (imported as 'customerPortalAction').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/dashboard/activity/page.tsx
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(dashboard)/dashboard/activity/page.tsx
+
+./app/(dashboard)/page.tsx
+Attempted import error: 'getCurrentUser' is not exported from '@/lib/auth/session' (imported as 'getCurrentUser').
+
+Import trace for requested module:
+./app/(dashboard)/page.tsx
+
+./app/(login)/actions.ts
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'invitations' is not exported from '@/lib/db/schema' (imported as 'invitations').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'invitations' is not exported from '@/lib/db/schema' (imported as 'invitations').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'invitations' is not exported from '@/lib/db/schema' (imported as 'invitations').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'invitations' is not exported from '@/lib/db/schema' (imported as 'invitations').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'invitations' is not exported from '@/lib/db/schema' (imported as 'invitations').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'invitations' is not exported from '@/lib/db/schema' (imported as 'invitations').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'getUserWithTeam' is not exported from '@/lib/db/queries' (imported as 'getUserWithTeam').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'getUserWithTeam' is not exported from '@/lib/db/queries' (imported as 'getUserWithTeam').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'getUserWithTeam' is not exported from '@/lib/db/queries' (imported as 'getUserWithTeam').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'getUserWithTeam' is not exported from '@/lib/db/queries' (imported as 'getUserWithTeam').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'getUserWithTeam' is not exported from '@/lib/db/queries' (imported as 'getUserWithTeam').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'getUserWithTeam' is not exported from '@/lib/db/queries' (imported as 'getUserWithTeam').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'invitations' is not exported from '@/lib/db/schema' (imported as 'invitations').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'invitations' is not exported from '@/lib/db/schema' (imported as 'invitations').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'invitations' is not exported from '@/lib/db/schema' (imported as 'invitations').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'invitations' is not exported from '@/lib/db/schema' (imported as 'invitations').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'invitations' is not exported from '@/lib/db/schema' (imported as 'invitations').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/(login)/actions.ts
+Attempted import error: 'ActivityType' is not exported from '@/lib/db/schema' (imported as 'ActivityType').
+
+Import trace for requested module:
+./app/(login)/actions.ts
+
+./app/api/team/route.ts
+Attempted import error: 'getTeamForUser' is not exported from '@/lib/db/queries' (imported as 'getTeamForUser').
+
+Import trace for requested module:
+./app/api/team/route.ts
+
+./lib/auth/middleware.ts
+Attempted import error: 'getTeamForUser' is not exported from '@/lib/db/queries' (imported as 'getTeamForUser').
+
+Import trace for requested module:
+./lib/auth/middleware.ts
+./lib/payments/actions.ts
+
+./lib/auth/middleware.ts
+Attempted import error: 'getTeamForUser' is not exported from '@/lib/db/queries' (imported as 'getTeamForUser').
+
+Import trace for requested module:
+./lib/auth/middleware.ts
+./lib/payments/actions.ts
+./app/(dashboard)/pricing/page.tsx
