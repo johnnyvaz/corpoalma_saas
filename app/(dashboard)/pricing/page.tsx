@@ -1,11 +1,24 @@
 
+'use client';
+
 import { Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+// import { Button } from '@/components/ui/button'; // Button não é mais usado diretamente para o submit
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SubmitButton } from './submit-button';
 import { createCheckoutSession } from '@/lib/payments/actions';
+import { useFormState } from 'react-dom';
+
+interface PricingPageActionState {
+  error?: string;
+  message?: string; // Pode ser usado para mensagens de sucesso ou informativas
+}
+
+const initialState: PricingPageActionState = {
+  // error e message serão undefined por padrão, o que é aceitável para campos opcionais
+};
 
 export default function PricingPage() {
+  const [state, formAction] = useFormState<PricingPageActionState, FormData>(createCheckoutSession, initialState);
   return (
     <div className="max-w-4xl mx-auto py-8">
       <div className="text-center mb-12">
@@ -74,10 +87,10 @@ export default function PricingPage() {
               </p>
             </div>
 
-            {/* TODO: Voltar para <form action={createCheckoutSession}> quando corrigir tipos do server action */}
-<a href="/api/stripe-checkout" target="_blank" rel="noopener noreferrer">
-  <Button type="button" variant="default">Comprar agora</Button>
-</a>
+            <form action={formAction}>
+              <SubmitButton />
+              {state?.error && <p className="text-sm text-red-500 mt-2 text-center">{state.error}</p>}
+            </form>
 
             <div className="text-xs text-muted-foreground space-y-1">
               <p>💳 Pagamento seguro via Stripe</p>
@@ -181,10 +194,10 @@ export default function PricingPage() {
           Inicie hoje mesmo sua jornada de 5 semanas rumo a uma vida mais saudável e equilibrada, 
           fundamentada nos princípios bíblicos.
         </p>
-        {/* TODO: Voltar para <form action={createCheckoutSession}> quando corrigir tipos do server action */}
-<a href="/api/stripe-checkout" target="_blank" rel="noopener noreferrer">
-  <Button type="button" variant="default">Comprar agora</Button>
-</a>
+        <form action={formAction}>
+          <SubmitButton />
+          {state?.error && <p className="text-sm text-red-500 mt-2 text-center">{state.error}</p>}
+        </form>
       </div>
     </div>
   );
