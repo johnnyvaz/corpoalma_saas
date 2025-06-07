@@ -3,22 +3,23 @@
 
 import { z } from 'zod';
 import { validatedAction } from '@/lib/auth/middleware';
+import { validatedActionWithUser } from '@/lib/auth/middleware';
 import { stripe } from '@/lib/payments/stripe';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 
 const createCheckoutSessionSchema = z.object({});
 
-export const createCheckoutSession = validatedAction(
+export const createCheckoutSession = validatedActionWithUser(
   createCheckoutSessionSchema,
-  async (data, { user, team }) => {
-    if (!team) {
-      throw new Error('Team not found');
+  async (data, formData, user) => {
+    if (!user) {
+      throw new Error('User is not authenticated');
     }
 
-    const headersList = headers();
-    const domain = headersList.get('host') || 'localhost:3000';
-    const protocol = headersList.get('x-forwarded-proto') || 'http';
+    const headersList = await headers();
+    const domain = (await headersList.get('host')) || 'localhost:3000';
+    const protocol = (await headersList.get('x-forwarded-proto')) || 'http';
 
     try {
       const session = await stripe.checkout.sessions.create({
@@ -30,17 +31,16 @@ export const createCheckoutSession = validatedAction(
               product_data: {
                 name: 'Programa Alimentando Corpo e Alma',
                 description: 'Programa completo de 5 semanas baseado em princípios bíblicos para transformação da saúde',
-                images: [], // Add program image URL here if available
+                images: [],
               },
-              unit_amount: 5000, // R$ 50.00 in centavos
+              unit_amount: 5000,
             },
             quantity: 1,
           },
         ],
-        mode: 'payment', // One-time payment instead of subscription
+        mode: 'payment',
         customer_email: user.email,
         metadata: {
-          teamId: team.id.toString(),
           userId: user.id.toString(),
         },
         success_url: `${protocol}://${domain}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
@@ -64,19 +64,19 @@ export const createCheckoutSession = validatedAction(
 
 const manageBillingSchema = z.object({});
 
-export const manageBilling = validatedAction(
+export const manageBilling = validatedActionWithUser(
   manageBillingSchema,
-  async (data, { team }) => {
-    if (!team?.stripeCustomerId) {
-      throw new Error('No Stripe customer found');
+  async (data, formData, user) => {
+    if (!user) {
+      throw new Error('User is not authenticated');
     }
 
-    const headersList = headers();
+    const headersList = await headers(); // `headers()` não é async
     const domain = headersList.get('host') || 'localhost:3000';
     const protocol = headersList.get('x-forwarded-proto') || 'http';
 
     const portalSession = await stripe.billingPortal.sessions.create({
-      customer: team.stripeCustomerId,
+      customer: user.id.toString(),  //TODO: VERIFICAR O ID DO STRIPE
       return_url: `${protocol}://${domain}/dashboard`,
     });
 

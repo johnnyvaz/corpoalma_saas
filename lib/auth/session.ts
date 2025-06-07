@@ -1,7 +1,8 @@
 import { compare, hash } from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-import { NewUser } from '@/lib/db/schema';
+import { NewUser, User } from '@/lib/db/schema';
+import { getUserById } from '@/lib/db/queries';
 
 const key = new TextEncoder().encode(process.env.AUTH_SECRET);
 const SALT_ROUNDS = 10;
@@ -59,12 +60,12 @@ export async function setSession(user: NewUser) {
 }
 
 export async function getUser(): Promise<User | null> {
-  const sessionCookie = cookies().get('session');
+  const sessionCookie = (await cookies()).get('session');
   if (!sessionCookie || !sessionCookie.value) {
     return null;
   }
 
-  const sessionData = await decrypt(sessionCookie.value);
+  const sessionData = await verifyToken(sessionCookie.value);
   if (
     !sessionData ||
     !sessionData.user ||

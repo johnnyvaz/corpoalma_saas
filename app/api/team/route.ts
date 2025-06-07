@@ -6,7 +6,7 @@ export async function GET() {
   // Esta é uma forma de obter o usuário, mas pode precisar de ajuste
   // dependendo de como a autenticação está configurada para as API routes.
   // Se houver um helper de sessão (ex: getServerSession), seria melhor usá-lo.
-  const user = await getUser(); // Assumindo que getUser() sem args retorna o usuário da sessão
+  const user = await getUser(''); // TODO: ERRO, PRECISA CORRIGIR
 
   if (!user) {
     return Response.json({ error: 'Não autorizado' }, { status: 401 });

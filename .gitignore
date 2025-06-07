@@ -40,3 +40,4 @@ next-env.d.ts
 postgres_data/
 .env*.local
 acessos.md
+.env copy

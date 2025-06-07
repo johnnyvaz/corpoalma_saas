@@ -18,7 +18,7 @@ export async function createCheckoutSession({
   team: Team | null;
   priceId: string;
 }) {
-  const user = await getUser();
+  const user = await getUser(''); //TODO: ERRO, PRECISA CORRIGIR
 
   if (!team || !user) {
     redirect(`/sign-up?redirect=checkout&priceId=${priceId}`);

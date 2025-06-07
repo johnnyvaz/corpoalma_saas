@@ -206,7 +206,9 @@ export async function getAverageWeightLoss(): Promise<number> {
     WHERE first_weight.weight > last_weight.weight
   `);
   
-  return result.rows[0]?.avg_loss || 0;
+  const firstRow = result[0] as { avg_loss: number | null } | undefined;
+
+  return firstRow?.avg_loss ?? 0;
 }
 
 // Team/admin queries (keeping existing structure)
