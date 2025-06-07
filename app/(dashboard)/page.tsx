@@ -1,130 +1,396 @@
+
+import { getCurrentUser } from '@/lib/auth/session';
+import { getWeeklyTheme, getDailyTask, getUserProgress, getLatestWeight } from '@/lib/db/queries';
+import { redirect } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CreditCard, Database } from 'lucide-react';
-import { Terminal } from './terminal';
+import { Progress } from '@/components/ui/progress';
+import { WeightTracker } from './components/weight-tracker';
+import { TaskCompletion } from './components/task-completion';
+import { WeeklyProgress } from './components/weekly-progress';
+import Link from 'next/link';
 
-export default function HomePage() {
-  return (
-    <main>
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-            <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
-              <h1 className="text-4xl font-bold text-gray-900 tracking-tight sm:text-5xl md:text-6xl">
-                Build Your SaaS
-                <span className="block text-orange-500">Faster Than Ever</span>
-              </h1>
-              <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-                Launch your SaaS product in record time with our powerful,
-                ready-to-use template. Packed with modern technologies and
-                essential integrations.
-              </p>
-              <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
-                <a
-                  href="https://vercel.com/templates/next.js/next-js-saas-starter"
-                  target="_blank"
-                >
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="text-lg rounded-full"
-                  >
-                    Deploy your own
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </a>
-              </div>
-            </div>
-            <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center">
-              <Terminal />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 bg-white w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-            <div>
-              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-orange-500 text-white">
-                <svg viewBox="0 0 24 24" className="h-6 w-6">
-                  <path
-                    fill="currentColor"
-                    d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"
-                  />
-                </svg>
-              </div>
-              <div className="mt-5">
-                <h2 className="text-lg font-medium text-gray-900">
-                  Next.js and React
-                </h2>
-                <p className="mt-2 text-base text-gray-500">
-                  Leverage the power of modern web technologies for optimal
-                  performance and developer experience.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-10 lg:mt-0">
-              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-orange-500 text-white">
-                <Database className="h-6 w-6" />
-              </div>
-              <div className="mt-5">
-                <h2 className="text-lg font-medium text-gray-900">
-                  Postgres and Drizzle ORM
-                </h2>
-                <p className="mt-2 text-base text-gray-500">
-                  Robust database solution with an intuitive ORM for efficient
-                  data management and scalability.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-10 lg:mt-0">
-              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-orange-500 text-white">
-                <CreditCard className="h-6 w-6" />
-              </div>
-              <div className="mt-5">
-                <h2 className="text-lg font-medium text-gray-900">
-                  Stripe Integration
-                </h2>
-                <p className="mt-2 text-base text-gray-500">
-                  Seamless payment processing and subscription management with
-                  industry-leading Stripe integration.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-                Ready to launch your SaaS?
-              </h2>
-              <p className="mt-3 max-w-3xl text-lg text-gray-500">
-                Our template provides everything you need to get your SaaS up
-                and running quickly. Don't waste time on boilerplate - focus on
-                what makes your product unique.
-              </p>
-            </div>
-            <div className="mt-8 lg:mt-0 flex justify-center lg:justify-end">
-              <a href="https://github.com/nextjs/saas-starter" target="_blank">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-lg rounded-full"
-                >
-                  View the code
-                  <ArrowRight className="ml-3 h-6 w-6" />
+export default async function HomePage() {
+  const user = await getCurrentUser();
+  
+  if (!user) {
+    // Show landing page for non-authenticated users
+    return (
+      <div className="min-h-screen">
+        {/* Hero Section */}
+        <section className="bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 py-20">
+          <div className="max-w-6xl mx-auto px-4 text-center">
+            <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              Alimentando Corpo e Alma
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              Transforme sua relação com a saúde através de um programa de 5 semanas 
+              baseado nos princípios bíblicos de cuidado integral.
+            </p>
+            <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+              <Link href="/sign-up">
+                <Button size="lg" className="text-lg px-8 py-3">
+                  Começar Minha Jornada - R$ 50
                 </Button>
-              </a>
+              </Link>
+              <Link href="/pricing">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-3">
+                  Saber Mais
+                </Button>
+              </Link>
             </div>
           </div>
-        </div>
-      </section>
-    </main>
+        </section>
+
+        {/* About Section */}
+        <section className="py-16 bg-white">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Um Programa Diferente</h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Não é apenas uma dieta ou programa de exercícios. É uma jornada de transformação 
+                que integra corpo, alma e espírito conforme os ensinamentos bíblicos.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <Card>
+                <CardHeader className="text-center">
+                  <div className="text-4xl mb-4">📖</div>
+                  <CardTitle>Base Bíblica</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p>Cada semana é fundamentada em princípios bíblicos sólidos sobre cuidado do corpo como templo do Espírito Santo.</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="text-center">
+                  <div className="text-4xl mb-4">🎯</div>
+                  <CardTitle>Tarefas Práticas</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p>Atividades diárias que conectam teoria e prática, promovendo mudanças reais e duradouras.</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="text-center">
+                  <div className="text-4xl mb-4">👥</div>
+                  <CardTitle>Comunidade</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p>Participe de um grupo exclusivo onde você pode compartilhar experiências e receber encorajamento.</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Program Structure */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-6xl mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-12">
+              5 Semanas de Transformação
+            </h2>
+            
+            <div className="space-y-8">
+              {[
+                {
+                  week: 1,
+                  title: 'Amor Próprio e o Templo do Espírito Santo',
+                  verse: '1 Coríntios 6:19',
+                  description: 'Compreendendo que nosso corpo é templo do Espírito Santo e merece cuidado e respeito.',
+                  color: 'from-purple-500 to-purple-600'
+                },
+                {
+                  week: 2,
+                  title: 'A Glutonaria e o Controle Emocional',
+                  verse: 'Provérbios 25:28',
+                  description: 'Aprendendo a distinguir entre fome física e emocional, desenvolvendo autocontrole.',
+                  color: 'from-blue-500 to-blue-600'
+                },
+                {
+                  week: 3,
+                  title: 'Hidratação, Descanso e Espírito',
+                  verse: 'Salmos 23:2',
+                  description: 'A importância do descanso e hidratação para o bem-estar físico e espiritual.',
+                  color: 'from-green-500 to-green-600'
+                },
+                {
+                  week: 4,
+                  title: 'Disciplina, Jejum e Exercício',
+                  verse: '1 Coríntios 9:27',
+                  description: 'Desenvolvendo disciplina através do jejum e exercícios físicos como forma de adoração.',
+                  color: 'from-yellow-500 to-orange-600'
+                },
+                {
+                  week: 5,
+                  title: 'Renovação da Mente e Perseverança',
+                  verse: 'Romanos 12:2',
+                  description: 'Renovando nossa mentalidade sobre saúde e mantendo a perseverança na jornada.',
+                  color: 'from-red-500 to-pink-600'
+                }
+              ].map((week) => (
+                <Card key={week.week} className="overflow-hidden">
+                  <div className="flex">
+                    <div className={`w-4 bg-gradient-to-b ${week.color}`}></div>
+                    <CardContent className="flex-1 p-6">
+                      <div className="flex items-start gap-6">
+                        <div className="text-center">
+                          <div className={`text-3xl font-bold bg-gradient-to-br ${week.color} bg-clip-text text-transparent`}>
+                            {week.week}
+                          </div>
+                          <div className="text-sm text-gray-500">SEMANA</div>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold mb-2">{week.title}</h3>
+                          <p className="text-gray-600 mb-3">{week.description}</p>
+                          <div className="text-sm text-blue-600 font-medium">
+                            📖 Baseado em {week.verse}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* What's Included */}
+        <section className="py-16 bg-white">
+          <div className="max-w-6xl mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-12">
+              O que está incluído
+            </h2>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { icon: '📚', title: 'eBook Completo', desc: 'Guia digital "Alimentando Corpo e Alma"' },
+                { icon: '🎵', title: 'Áudios Diários', desc: 'Palavra de encorajamento para cada dia' },
+                { icon: '✅', title: 'Tarefas Práticas', desc: '35 atividades transformadoras' },
+                { icon: '💬', title: 'Grupo Exclusivo', desc: 'Comunidade de apoio e encorajamento' },
+                { icon: '📊', title: 'Acompanhamento', desc: 'Ferramentas para monitorar progresso' },
+                { icon: '🏆', title: 'Certificado', desc: 'Reconhecimento por completar o programa' },
+                { icon: '📱', title: 'Acesso Digital', desc: 'Plataforma online personalizada' },
+                { icon: '🙏', title: 'Suporte', desc: 'Acompanhamento durante toda jornada' }
+              ].map((item, index) => (
+                <Card key={index} className="text-center">
+                  <CardContent className="pt-6">
+                    <div className="text-3xl mb-3">{item.icon}</div>
+                    <h3 className="font-bold mb-2">{item.title}</h3>
+                    <p className="text-sm text-gray-600">{item.desc}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <h2 className="text-4xl font-bold mb-6">
+              Comece Sua Transformação Hoje
+            </h2>
+            <p className="text-xl mb-8 opacity-90">
+              Por apenas R$ 50, você terá acesso a um programa completo que pode 
+              transformar sua vida para sempre.
+            </p>
+            <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+              <Link href="/sign-up">
+                <Button size="lg" variant="secondary" className="text-lg px-8 py-3">
+                  Quero Participar Agora
+                </Button>
+              </Link>
+            </div>
+            <p className="text-sm mt-6 opacity-75">
+              ✨ Acesso imediato • 💳 Pagamento seguro • 🔒 Dados protegidos
+            </p>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // Show dashboard for authenticated users
+  const currentWeek = user.currentWeek || 1;
+  const currentDay = Math.floor((Date.now() - new Date(user.programStartDate || Date.now()).getTime()) / (1000 * 60 * 60 * 24)) % 7 + 1;
+  
+  const weeklyTheme = await getWeeklyTheme(currentWeek);
+  const dailyTask = await getDailyTask(currentWeek, Math.min(currentDay, 7));
+  const userProgress = await getUserProgress(user.id, currentWeek);
+  const latestWeight = await getLatestWeight(user.id);
+
+  const completedTasks = userProgress.filter(p => p.completed).length;
+  const totalTasks = 7; // 7 days per week
+  const weekProgress = (completedTasks / totalTasks) * 100;
+
+  const programStartDate = user.programStartDate ? new Date(user.programStartDate) : new Date();
+  const daysSinceStart = Math.floor((Date.now() - programStartDate.getTime()) / (1000 * 60 * 60 * 24));
+  const totalProgramDays = 35; // 5 weeks * 7 days
+  const overallProgress = Math.min((daysSinceStart / totalProgramDays) * 100, 100);
+
+  return (
+    <div className="space-y-6">
+      {/* Welcome Header */}
+      <div className="flex flex-col space-y-2">
+        <h1 className="text-3xl font-bold">Olá, {user.name}! 🙏</h1>
+        <p className="text-muted-foreground">
+          Bem-vindo(a) ao programa "Alimentando Corpo e Alma" - Semana {currentWeek} de 5
+        </p>
+      </div>
+
+      {/* Overall Progress */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Progresso Geral do Programa</CardTitle>
+          <CardDescription>
+            Sua jornada de transformação começou em {programStartDate.toLocaleDateString('pt-BR')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Progresso</span>
+              <span>{Math.round(overallProgress)}%</span>
+            </div>
+            <Progress value={overallProgress} className="h-2" />
+            <p className="text-sm text-muted-foreground">
+              Dia {daysSinceStart + 1} de {totalProgramDays}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Current Week Theme */}
+      {weeklyTheme && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              📖 Tema da Semana {currentWeek}
+            </CardTitle>
+            <CardDescription>{weeklyTheme.title}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p>{weeklyTheme.description}</p>
+            <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+              <p className="font-medium text-blue-900">Versículo da Semana:</p>
+              <p className="text-blue-800 italic">{weeklyTheme.bibleVerse}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Today's Task */}
+        {dailyTask && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                ✅ Tarefa de Hoje (Dia {Math.min(currentDay, 7)})
+              </CardTitle>
+              <CardDescription>{dailyTask.title}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p>{dailyTask.description}</p>
+              {dailyTask.audioUrl && (
+                <div className="bg-green-50 p-3 rounded-lg">
+                  <p className="text-sm font-medium text-green-900 mb-2">🎵 Áudio do Dia:</p>
+                  <audio controls className="w-full">
+                    <source src={dailyTask.audioUrl} type="audio/mpeg" />
+                    Seu navegador não suporta o elemento de áudio.
+                  </audio>
+                </div>
+              )}
+              <TaskCompletion 
+                userId={user.id}
+                weekNumber={currentWeek}
+                dayNumber={Math.min(currentDay, 7)}
+                isCompleted={userProgress.find(p => p.dayNumber === Math.min(currentDay, 7))?.completed || false}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Weekly Progress */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Progresso da Semana {currentWeek}</CardTitle>
+            <CardDescription>Tarefas concluídas nesta semana</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm">
+                <span>Tarefas Completas</span>
+                <span>{completedTasks} de {totalTasks}</span>
+              </div>
+              <Progress value={weekProgress} className="h-2" />
+              <WeeklyProgress 
+                userProgress={userProgress}
+                currentWeek={currentWeek}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Weight Tracking */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              ⚖️ Acompanhamento de Peso
+            </CardTitle>
+            <CardDescription>
+              {latestWeight 
+                ? `Último registro: ${latestWeight.weight}kg em ${new Date(latestWeight.recordedAt).toLocaleDateString('pt-BR')}`
+                : 'Nenhum peso registrado ainda'
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <WeightTracker userId={user.id} currentWeek={currentWeek} />
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Ações Rápidas</CardTitle>
+            <CardDescription>Ferramentas úteis para sua jornada</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button variant="outline" className="w-full justify-start">
+              📝 Escrever Testemunho
+            </Button>
+            <Button variant="outline" className="w-full justify-start">
+              📊 Ver Histórico Completo
+            </Button>
+            <Button variant="outline" className="w-full justify-start">
+              💬 Acessar Grupo da Comunidade
+            </Button>
+            <Button variant="outline" className="w-full justify-start">
+              📖 Download do eBook
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Motivational Quote */}
+      <Card className="bg-gradient-to-r from-purple-50 to-blue-50">
+        <CardContent className="pt-6">
+          <div className="text-center space-y-2">
+            <p className="text-lg font-medium text-purple-900">
+              "Tudo posso naquele que me fortalece."
+            </p>
+            <p className="text-purple-700">Filipenses 4:13</p>
+            <p className="text-sm text-purple-600">
+              Continue firme em sua jornada de transformação! Deus está com você a cada passo. 💪✨
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

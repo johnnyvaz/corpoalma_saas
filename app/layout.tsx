@@ -1,43 +1,30 @@
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
-import type { Metadata, Viewport } from 'next';
-import { Manrope } from 'next/font/google';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
-import { SWRConfig } from 'swr';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Next.js SaaS Starter',
-  description: 'Get started quickly with Next.js, Postgres, and Stripe.'
+  title: 'Alimentando Corpo e Alma - Programa de Saúde Cristã',
+  description: 'Transforme sua relação com a saúde através de um programa de 5 semanas baseado nos princípios bíblicos de cuidado integral.',
+  keywords: 'saúde cristã, programa bíblico, alimentação saudável, transformação, corpo e alma',
+  authors: [{ name: 'Programa Alimentando Corpo e Alma' }],
+  openGraph: {
+    title: 'Alimentando Corpo e Alma - Programa de Saúde Cristã',
+    description: 'Transforme sua relação com a saúde através de princípios bíblicos',
+    type: 'website',
+  },
 };
-
-export const viewport: Viewport = {
-  maximumScale: 1
-};
-
-const manrope = Manrope({ subsets: ['latin'] });
 
 export default function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`bg-white dark:bg-gray-950 text-black dark:text-white ${manrope.className}`}
-    >
-      <body className="min-h-[100dvh] bg-gray-50">
-        <SWRConfig
-          value={{
-            fallback: {
-              // We do NOT await here
-              // Only components that read this data will suspend
-              '/api/user': getUser(),
-              '/api/team': getTeamForUser()
-            }
-          }}
-        >
-          {children}
-        </SWRConfig>
+    <html lang="pt-BR">
+      <body className={inter.className}>
+        {children}
       </body>
     </html>
   );
